@@ -10,6 +10,7 @@ using Random = UnityEngine.Random;
 public partial class WalkInAreaAction : Action
 {
     [SerializeReference] public BlackboardVariable<GameObject> Agent;
+    
     [SerializeReference] public BlackboardVariable<Transform> areaTopLeft;
 
     [SerializeReference] public BlackboardVariable<Transform> areaBottomRight;
@@ -18,15 +19,20 @@ public partial class WalkInAreaAction : Action
     
     [SerializeReference] public BlackboardVariable<float> WaitTime = new BlackboardVariable<float>(1.0f);
     
+    [SerializeReference] public BlackboardVariable<string> AnimatorSpeedParam = new BlackboardVariable<string>("SpeedMagnitude");
+    
     private float WaitTimer;
     
     private bool Waiting;
 
     private Vector2 targetPosition;
+    
+    private Animator Animator;
 
     protected override Status OnStart()
     {
         PickNewTarget();
+        Animator = Agent.Value.GetComponentInChildren<Animator>();
         WaitTimer = WaitTime.Value;
         return Status.Running;
     }
@@ -41,6 +47,7 @@ public partial class WalkInAreaAction : Action
 
         if (Waiting)
         {
+            Animator.SetFloat(AnimatorSpeedParam,0);
             if (WaitTimer > 0f)
             {
                 WaitTimer -= Time.deltaTime;
@@ -50,6 +57,10 @@ public partial class WalkInAreaAction : Action
                 Waiting = false;
                 return Status.Success;
             }
+        }
+        else if (!Waiting)
+        {
+            Animator.SetFloat(AnimatorSpeedParam,1);
         }
         return Status.Running;
     }
